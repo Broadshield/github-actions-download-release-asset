@@ -22,8 +22,8 @@
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "@octokit/openapi-types": "^3.0.0",
-    "@octokit/rest": "^18.0.12",
-    "got": "^11.8.1"
+    "@octokit/request": "^5.4.12",
+    "@octokit/rest": "^18.0.12"
   },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.7",
