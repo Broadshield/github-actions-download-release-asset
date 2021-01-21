@@ -68,7 +68,7 @@ async function run(): Promise<void> {
       filepath,
       repos,
       github_token,
-      octokit
+      undefined
     )
   } catch (error) {
     core.setFailed(error.message)
