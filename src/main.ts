@@ -62,7 +62,14 @@ async function run(): Promise<void> {
       ignore_v_when_searching
     )
 
-    await downloadReleaseAssets(release, asset_names, filepath, repos, octokit)
+    await downloadReleaseAssets(
+      release,
+      asset_names,
+      filepath,
+      repos,
+      github_token,
+      octokit
+    )
   } catch (error) {
     core.setFailed(error.message)
   }

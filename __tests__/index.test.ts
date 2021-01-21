@@ -1,7 +1,42 @@
 import {Repo} from '../src/interfaces'
 import {Context} from '@actions/github/lib/context'
-
+import * as github from '@actions/github'
+import * as Octokit from '@octokit/core'
 import {repoSplit, downloadReleaseAssets, getReleaseByTag} from '../src/utils'
+import {assert} from 'console'
+
+describe('get releases', () => {
+  async function testOctokit(): Promise<void> {
+    assert(process.env.GITHUB_TOKEN, "Token doesn't exist")
+    const github_token: string = process.env.GITHUB_TOKEN || ''
+    const octokit = github.getOctokit(github_token)
+    const repos = repoSplit('Broadshield/wearsafe-api', null)
+    const tag_name = 'v2.14.2'
+    const ignore_v_when_searching = true
+    const asset_names = ['ROOT.war']
+    const filepath = process.cwd()
+    if (github_token == null || repos == null) {
+      return
+    }
+    const release = await getReleaseByTag(
+      repos.owner,
+      repos.repo,
+      tag_name,
+      octokit,
+      ignore_v_when_searching
+    )
+
+    await downloadReleaseAssets(
+      release,
+      asset_names,
+      filepath,
+      repos,
+      github_token,
+      undefined
+    )
+  }
+  testOctokit()
+})
 
 describe('repoSplit utility', () => {
   const OLD_ENV = process.env

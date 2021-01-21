@@ -4,10 +4,12 @@ import * as core from '@actions/core'
 import {GitHub} from '@actions/github/lib/utils'
 import fs from 'fs'
 import * as path from 'path'
+import {Octokit} from '@octokit/rest'
+import {request} from '@octokit/request'
 
 export function repoSplit(
   inputRepo: string | undefined | null,
-  context: Context
+  context: Context | undefined | null
 ): Repo | null {
   if (inputRepo) {
     const [owner, repo] = inputRepo.split('/')
@@ -28,7 +30,7 @@ export function repoSplit(
     return result
   }
 
-  if (context.payload.repository) {
+  if (context && context.payload.repository) {
     const result = {
       owner: context.payload.repository.owner.login,
       repo: context.payload.repository.name
@@ -86,7 +88,7 @@ export async function getReleaseByTag(
   if (r === undefined) {
     core.setFailed(`getReleaseByTag found no releases matching ${tagName}`)
   }
-  core.debug(`getLatestTag returns ${JSON.stringify(r)}`)
+  core.debug(`getReleaseByTag returns ${JSON.stringify(r?.name, null, ' ')}`)
   return r
 }
 
@@ -99,8 +101,24 @@ export async function downloadReleaseAssets(
   asset_names: string[],
   filepath: string,
   repos: Repo,
-  octokit: InstanceType<typeof GitHub>
+  token: string,
+  octokitInstance: InstanceType<typeof GitHub> | undefined
 ): Promise<void> {
+  let octokit: InstanceType<typeof GitHub> | InstanceType<typeof Octokit>
+  if (octokitInstance === undefined) {
+    octokit = new Octokit()
+    octokit.repos.getReleaseAsset.endpoint.merge({
+      headers: {
+        Accept: 'application/octet-stream',
+        UserAgent: 'download-release-assets',
+        //Host: "api.github.com"
+        Authorization: `token ${token}`
+      },
+      access_token: token
+    })
+  } else {
+    octokit = octokitInstance
+  }
   let download_assets: string[]
   if (release !== undefined) {
     const release_assets: ReleaseAsset[] = release?.assets
@@ -128,15 +146,21 @@ export async function downloadReleaseAssets(
           }
           const outFilePath: string = path.resolve(filepath, a.name)
           downloaded_paths.push(outFilePath)
-          const fileStream = fs.createWriteStream(outFilePath)
-          const fBuffer = await octokit.repos.getReleaseAsset({
+          const fileStream = fs.createWriteStream(outFilePath, {flags: 'a'})
+
+          const requestOptions = octokit.repos.getReleaseAsset.endpoint({
             ...repos,
             asset_id: a.id,
             headers: {
-              Accept: 'application/octet-stream'
-            }
+              Accept: 'application/octet-stream',
+              UserAgent: 'download-release-assets'
+            },
+            access_token: token
           })
-          fileStream.write(fBuffer.data)
+          const response = await request(requestOptions)
+
+          fileStream.write(Buffer.from(response.data))
+
           fileStream.end()
         }
       }
