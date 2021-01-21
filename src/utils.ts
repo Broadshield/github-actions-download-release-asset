@@ -107,7 +107,7 @@ export async function downloadReleaseAssets(
     const release_asset_names = release_assets.map(a => a.name)
     if (release_assets.length > 0) {
       if (asset_names) {
-        if (checker(asset_names, release_asset_names)) {
+        if (!checker(asset_names, release_asset_names)) {
           core.warning(
             `The release contains these assets ${JSON.stringify(
               release_asset_names
@@ -131,7 +131,10 @@ export async function downloadReleaseAssets(
           const fileStream = fs.createWriteStream(outFilePath)
           const fBuffer = await octokit.repos.getReleaseAsset({
             ...repos,
-            asset_id: a.id
+            asset_id: a.id,
+            headers: {
+              Accept: 'application/octet-stream'
+            }
           })
           fileStream.write(fBuffer.data)
           fileStream.end()

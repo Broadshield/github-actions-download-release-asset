@@ -1,14 +1,7 @@
-
 import {Repo} from '../src/interfaces'
 import {Context} from '@actions/github/lib/context'
 
-import {
-
-  repoSplit,
-  downloadReleaseAssets,
-  getReleaseByTag
-} from '../src/utils'
-
+import {repoSplit, downloadReleaseAssets, getReleaseByTag} from '../src/utils'
 
 describe('repoSplit utility', () => {
   const OLD_ENV = process.env
