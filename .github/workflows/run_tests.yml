@@ -9,7 +9,7 @@ jobs:
     # container:
     #   image: node:12
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
         name: Checkout
       - name: Set Cache Path
         run: |
