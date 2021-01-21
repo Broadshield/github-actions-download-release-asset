@@ -1,0 +1,81 @@
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - jamie-wearsafe
+      - tland1
+    reviewers:
+      - brunocleite
+      - theagodemattos
+    labels:
+      - "github-actions"
+      - "dependencies"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - jamie-wearsafe
+      - tland1
+    reviewers:
+      - brunocleite
+      - theagodemattos
+    labels:
+      - "docker"
+      - "dependencies"
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - tland1
+    reviewers:
+      - brunocleite
+      - theagodemattos
+      - hpriyas
+    labels:
+      - "maven"
+      - "dependencies"
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - tland1
+    reviewers:
+      - brunocleite
+      - theagodemattos
+      - hpriyas
+    labels:
+      - "gradle"
+      - "dependencies"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - tland1
+    reviewers:
+      - brunocleite
+      - theagodemattos
+      - hpriyas
+    labels:
+      - "npm"
+      - "dependencies"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - tland1
+    reviewers:
+      - brunocleite
+      - theagodemattos
+      - hpriyas
+    labels:
+      - "pip"
+      - "dependencies"
