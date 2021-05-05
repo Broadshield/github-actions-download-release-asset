@@ -1,6 +1,6 @@
 # github-actions-download-release-asset
-This action downloads a release asset from a release to the current workflow
 
+This action downloads a release asset from a release to the current workflow
 
 ```yml
 name: 🚢 Deploy
@@ -23,7 +23,7 @@ on:
     name: Deployment Process
 
     steps:
-    # ...
+      # ...
       - uses: Broadshield/github-actions-download-release-asset@main
         name: Download Release by Tag
         id: download
@@ -35,4 +35,3 @@ on:
           repository: ${{github.repository}}
     # ...
 ```
-

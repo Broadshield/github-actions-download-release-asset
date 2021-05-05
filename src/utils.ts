@@ -1,50 +1,42 @@
-import {Context} from '@actions/github/lib/context'
-import {Repo, Release, ReleaseAsset} from './interfaces'
 import * as core from '@actions/core'
-import {GitHub} from '@actions/github/lib/utils'
+import { Context } from '@actions/github/lib/context'
+import { GitHub } from '@actions/github/lib/utils'
+import { Octokit } from '@octokit/rest'
 import fs from 'fs'
 import * as path from 'path'
-import {Octokit} from '@octokit/rest'
-import {request} from '@octokit/request'
+
+import { Release, ReleaseAsset, Repo } from './interfaces'
 
 export function repoSplit(
   inputRepo: string | undefined | null,
-  context: Context | undefined | null
+  context: Context | undefined | null,
 ): Repo | null {
+  const result = ({} as unknown) as Repo
   if (inputRepo) {
-    const [owner, repo] = inputRepo.split('/')
-    const result = {owner, repo}
-    core.debug(
-      `repoSplit passed ${inputRepo} and returns ${JSON.stringify(result)}`
-    )
-    return result
-  }
-  if (process.env.GITHUB_REPOSITORY) {
-    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/')
-    const result = {owner, repo}
-    core.debug(
-      `repoSplit using GITHUB_REPOSITORY ${
-        process.env.GITHUB_REPOSITORY
-      } and returns ${JSON.stringify(result)}`
-    )
-    return result
-  }
+    ;[result.owner, result.repo] = inputRepo.split('/')
 
-  if (context && context.payload.repository) {
-    const result = {
-      owner: context.payload.repository.owner.login,
-      repo: context.payload.repository.name
-    }
+    core.debug(`repoSplit passed ${inputRepo} and returns ${JSON.stringify(result)}`)
+    return result
+  } else if (process.env.GITHUB_REPOSITORY) {
+    ;[result.owner, result.repo] = process.env.GITHUB_REPOSITORY.split('/')
     core.debug(
       `repoSplit using GITHUB_REPOSITORY ${
         process.env.GITHUB_REPOSITORY
-      } and returns ${JSON.stringify(result)}`
+      } and returns ${JSON.stringify(result)}`,
+    )
+    return result
+  } else if (context) {
+    result.owner = context.repo.owner
+    result.repo = context.repo.repo
+
+    core.debug(
+      `repoSplit using GITHUB_REPOSITORY ${
+        process.env.GITHUB_REPOSITORY
+      } and returns ${JSON.stringify(result)}`,
     )
     return result
   }
-  throw Error(
-    "repoSplit requires a GITHUB_REPOSITORY environment variable like 'owner/repo'"
-  )
+  throw Error("repoSplit requires a GITHUB_REPOSITORY environment variable like 'owner/repo'")
 }
 function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
@@ -55,12 +47,12 @@ export async function getReleaseByTag(
   repo: string,
   tagName: string,
   octokit: InstanceType<typeof GitHub>,
-  ignore_v_when_searching = true
+  ignore_v_when_searching = true,
 ): Promise<Release | undefined> {
   const pages = {
     owner,
     repo,
-    per_page: 100
+    per_page: 100,
   }
 
   let search_str
@@ -74,16 +66,16 @@ export async function getReleaseByTag(
   const releases = await octokit.paginate(
     octokit.repos.listReleases,
     pages,
-    (response, done) => {
-      if (response.data.find(item => item.tag_name.match(search_re))) {
+    (response: any, done) => {
+      if (response.data.find((item: any) => item.tag_name.match(search_re))) {
         if (done !== undefined) {
           done()
         }
       }
       return response.data
-    }
+    },
   )
-  const r = releases.find(item => item.tag_name.match(search_re))
+  const r = releases.find((item: any) => item.tag_name.match(search_re))
 
   if (r === undefined) {
     core.setFailed(`getReleaseByTag found no releases matching ${tagName}`)
@@ -102,19 +94,19 @@ export async function downloadReleaseAssets(
   filepath: string,
   repos: Repo,
   token: string,
-  octokitInstance: InstanceType<typeof GitHub> | undefined
+  octokitInstance: InstanceType<typeof GitHub> | InstanceType<typeof Octokit> | undefined,
 ): Promise<void> {
   let octokit: InstanceType<typeof GitHub> | InstanceType<typeof Octokit>
   if (octokitInstance === undefined) {
-    octokit = new Octokit()
+    octokit = new Octokit({ auth: token })
     octokit.repos.getReleaseAsset.endpoint.merge({
       headers: {
         Accept: 'application/octet-stream',
         UserAgent: 'download-release-assets',
         //Host: "api.github.com"
-        Authorization: `token ${token}`
+        // Authorization: `token ${token}`,
       },
-      access_token: token
+      // access_token: token,
     })
   } else {
     octokit = octokitInstance
@@ -128,8 +120,8 @@ export async function downloadReleaseAssets(
         if (!checker(asset_names, release_asset_names)) {
           core.warning(
             `The release contains these assets ${JSON.stringify(
-              release_asset_names
-            )} but you requested ${JSON.stringify(asset_names)}`
+              release_asset_names,
+            )} but you requested ${JSON.stringify(asset_names)}`,
           )
         }
         download_assets = asset_names.filter(an => {
@@ -146,18 +138,18 @@ export async function downloadReleaseAssets(
           }
           const outFilePath: string = path.resolve(filepath, a.name)
           downloaded_paths.push(outFilePath)
-          const fileStream = fs.createWriteStream(outFilePath, {flags: 'a'})
+          const fileStream = fs.createWriteStream(outFilePath, { flags: 'a' })
 
-          const requestOptions = octokit.repos.getReleaseAsset.endpoint({
+          const response = await octokit.rest.repos.getReleaseAsset({
             ...repos,
             asset_id: a.id,
             headers: {
               Accept: 'application/octet-stream',
-              UserAgent: 'download-release-assets'
+              UserAgent: 'download-release-assets',
             },
-            access_token: token
+            // access_token: token,
           })
-          const response = await request(requestOptions)
+          // const response = await request(requestOptions)
 
           fileStream.write(Buffer.from(response.data))
 

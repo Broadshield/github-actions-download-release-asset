@@ -1,4 +1,4 @@
-node_modules
-lib
-dist
-.github
+dist/
+lib/
+node_modules/
+jest.config.ts
