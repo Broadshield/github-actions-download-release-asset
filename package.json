@@ -15,9 +15,9 @@
     "gradle",
     "tagging"
   ],
+  "private": true,
   "author": "Jamie Nelson <jamie@wearsafe.com>",
   "license": "MIT",
-  "private": true,
   "dependencies": {
     "@actions/core": "^1.2.7",
     "@actions/github": "^4.0.0",
@@ -59,6 +59,7 @@
     "js-yaml": "^4.0.0",
     "lint-staged": "^10.5.4",
     "markdownlint-cli": "^0.27.1",
+    "pinst": "^2.1.6",
     "prettier": "^2.2.1",
     "semantic-release": "^17.4.2",
     "stylelint": "^13.13.1",
@@ -86,10 +87,11 @@
     "lint:markdown:fix": "yarn lint:markdown --fix",
     "lint:markdown": "markdownlint \"**/*.md\" --config=.markdownlint.json --ignore-path=.markdownlintignore",
     "lint": "eslint . --ext .js,.ts",
-    "postinstall": "yarn husky install && yarn build",
+    "postinstall": "husky install",
     "pre-commit": "lint-staged && yon run build && git add dist",
     "pre-push": "yarn check:format",
-    "preversion": "echo 'Running test';yon test"
+    "preversion": "echo 'Running test';yon test",
+    "prepare": "husky install"
   },
   "jest": {
     "testPathIgnorePatterns": [
