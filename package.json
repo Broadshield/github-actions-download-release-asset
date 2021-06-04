@@ -1,12 +1,12 @@
 {
-  "name": "github-action-cleanup-releases-and-tags",
+  "name": "github-action-download-release-asset",
   "version": "1.0.0",
-  "description": "This removes unused Tags and Releases that are created during the PR process",
+  "description": "Download a release asset from a release",
   "main": "lib/main.js",
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url:": "git@github.com:Broadshield/github-action-cleanup-releases-and-tags.git"
+    "url:": "git@github.com:Broadshield/github-action-download-release-asset.git"
   },
   "keywords": [
     "actions",
