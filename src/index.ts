@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
-import { Repo } from './interfaces'
+import { Repo } from './@types'
 import { downloadReleaseAssets, getReleaseByTag, repoSplit } from './utils'
 
 async function run(): Promise<void> {

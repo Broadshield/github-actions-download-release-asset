@@ -4,7 +4,7 @@ import { assert } from 'console'
 import * as path from 'path'
 
 import * as fsHelper from '../src/fs-helper'
-import { Repo } from '../src/interfaces'
+import { Repo } from '../src/@types'
 import { downloadReleaseAssets, getReleaseByTag, repoSplit } from '../src/utils'
 
 const originalGitHubWorkspace = process.env.GITHUB_WORKSPACE
