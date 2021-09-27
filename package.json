@@ -30,7 +30,7 @@
     "@commitlint/cli": "^12.1.1",
     "@commitlint/config-conventional": "^12.1.1",
     "@github/prettier-config": "^0.0.4",
-    "@octokit/openapi-types": "^3.0.0",
+    "@octokit/openapi-types": "^10.6.0",
     "@primer/css": "*",
     "@tsconfig/node12": "^1.0.7",
     "@types/jest": "^26.0.23",
