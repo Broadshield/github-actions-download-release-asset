@@ -34,7 +34,7 @@
     "@primer/css": "*",
     "@tsconfig/node12": "^1.0.7",
     "@types/jest": "^26.0.23",
-    "@types/js-yaml": "^4.0.1",
+    "@types/js-yaml": "^4.0.5",
     "@types/lodash": "^4.14.168",
     "@types/node": "^15.0.1",
     "@types/node-fetch": "^2.5.10",
