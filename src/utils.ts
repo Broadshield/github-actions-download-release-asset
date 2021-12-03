@@ -149,7 +149,8 @@ export async function downloadReleaseAssets(
           )
           // Redirect URLs now contain the auth key, redirect without the auth header
           if (downloadInfo?.headers?.location !== undefined) {
-            const asset = await octokit.request(`GET ${downloadInfo.headers.location}`, {
+            const ok = new Octokit()
+            const asset = await ok.request(`GET ${downloadInfo.headers.location}`, {
               headers: {
                 Accept: 'application/octet-stream',
                 UserAgent: 'download-release-assets',
