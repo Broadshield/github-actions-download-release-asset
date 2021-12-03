@@ -64,7 +64,7 @@ export async function getReleaseByTag(
   }
   const search_re = RegExp(search_str)
   const releases = await octokit.paginate(
-    octokit.repos.listReleases,
+    octokit.rest.repos.listReleases,
     pages,
     (response: any, done) => {
       if (response.data.find((item: any) => item.tag_name.match(search_re))) {
@@ -99,7 +99,7 @@ export async function downloadReleaseAssets(
   let octokit: InstanceType<typeof GitHub> | InstanceType<typeof Octokit>
   if (octokitInstance === undefined) {
     octokit = new Octokit({ auth: token })
-    octokit.repos.getReleaseAsset.endpoint.merge({
+    octokit.rest.repos.getReleaseAsset.endpoint.merge({
       headers: {
         Accept: 'application/octet-stream',
         UserAgent: 'download-release-assets',
@@ -140,20 +140,24 @@ export async function downloadReleaseAssets(
           downloaded_paths.push(outFilePath)
           const fileStream = fs.createWriteStream(outFilePath, { flags: 'a' })
 
-          const response = await octokit.rest.repos.getReleaseAsset({
-            ...repos,
-            asset_id: a.id,
-            headers: {
-              Accept: 'application/octet-stream',
-              UserAgent: 'download-release-assets',
+          const downloadInfo = await octokit.request(
+            'GET /repos/{owner}/{repo}/releases/assets/{asset_id}',
+            {
+              ...repos,
+              asset_id: a.id,
             },
-            // access_token: token,
-          })
-          // const response = await request(requestOptions)
-
-          fileStream.write(Buffer.from(response.data))
-
-          fileStream.end()
+          )
+          // Redirect URLs now contain the auth key, redirect without the auth header
+          if (downloadInfo?.headers?.location !== undefined) {
+            const asset = await octokit.request(`GET ${downloadInfo.headers.location}`, {
+              headers: {
+                Accept: 'application/octet-stream',
+                UserAgent: 'download-release-assets',
+              },
+            })
+            fileStream.write(Buffer.from(asset.data))
+            fileStream.end()
+          }
         }
       }
       core.setOutput('downloaded_paths', JSON.stringify(downloaded_paths))

@@ -13,6 +13,8 @@ const config: Config.InitialOptions = {
   },
   setupFiles: ['dotenv/config'],
   reporters: ['default', 'jest-junit'],
+  testPathIgnorePatterns: ['/helpers/', '/node_modules/'],
+  coveragePathIgnorePatterns: ['/node_modules/'],
 
   verbose: true,
 }

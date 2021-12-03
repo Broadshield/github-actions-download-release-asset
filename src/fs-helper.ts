@@ -13,8 +13,11 @@ export function directoryExistsSync(path: string, required?: boolean): boolean {
     }
 
     throw new Error(`Directory '${path}' does not exist`)
-  } catch (error) {
-    if (error.code === 'ENOENT') {
+  } catch (error: any) {
+    if (
+      ('status' in error && error.status === 'ENOENT') ||
+      ('code' in error && error.code === 'ENOENT')
+    ) {
       if (!required) {
         return false
       }
@@ -35,8 +38,11 @@ export function existsSync(path: string): boolean {
 
   try {
     fs.statSync(path)
-  } catch (error) {
-    if (error.code === 'ENOENT') {
+  } catch (error: any) {
+    if (
+      ('status' in error && error.status === 'ENOENT') ||
+      ('code' in error && error.code === 'ENOENT')
+    ) {
       return false
     }
 
@@ -60,8 +66,11 @@ export function fileExistsSync(path: string): boolean {
     }
 
     return false
-  } catch (error) {
-    if (error.code === 'ENOENT') {
+  } catch (error: any) {
+    if (
+      ('status' in error && error.status === 'ENOENT') ||
+      ('code' in error && error.code === 'ENOENT')
+    ) {
       return false
     }
 
