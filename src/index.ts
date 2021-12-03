@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
-import { Repo } from './@types'
+import { Repo } from './types'
 import { downloadReleaseAssets, getReleaseByTag, repoSplit } from './utils'
 
 async function run(): Promise<void> {
@@ -54,7 +54,7 @@ async function run(): Promise<void> {
     )
 
     await downloadReleaseAssets(release, asset_names, filepath, repos, github_token, undefined)
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(error.message)
   }
 }

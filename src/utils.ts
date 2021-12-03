@@ -5,7 +5,7 @@ import { Octokit } from '@octokit/rest'
 import fs from 'fs'
 import * as path from 'path'
 
-import { Release, ReleaseAsset, Repo } from './@types'
+import { Release, ReleaseAsset, Repo } from './types'
 
 export function repoSplit(
   inputRepo: string | undefined | null,

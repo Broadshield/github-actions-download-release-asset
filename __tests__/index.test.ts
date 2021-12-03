@@ -4,7 +4,7 @@ import { assert } from 'console'
 import * as path from 'path'
 
 import * as fsHelper from '../src/fs-helper'
-import { Repo } from '../src/@types'
+import { Repo } from '../src/types'
 import { downloadReleaseAssets, getReleaseByTag, repoSplit } from '../src/utils'
 
 const originalGitHubWorkspace = process.env.GITHUB_WORKSPACE
@@ -25,7 +25,6 @@ const originalEnvironment = { ...process.env }
 
 describe('get releases', () => {
   beforeAll(() => {
-
     // Mock getInput
     jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
       return inputs[name]
