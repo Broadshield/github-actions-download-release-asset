@@ -172,7 +172,7 @@ export async function downloadReleaseAssets(
         core.setOutput('release_id', release.id);
         core.setOutput('release_name', release.name);
         core.setOutput('release_tag_name', release.tag_name);
-        core.setOutput('release_body', release?.body);
-        core.setOutput('releaseAssets_found', releaseAssets?.join(','));
+        core.setOutput('release_body', release.body_text);
+        core.setOutput('releaseAssets_found', JSON.stringify(releaseAssets));
     }
 }
