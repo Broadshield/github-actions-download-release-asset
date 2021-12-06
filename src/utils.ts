@@ -1,11 +1,13 @@
 import * as core from '@actions/core';
 import { Context } from '@actions/github/lib/context';
 import { GitHub } from '@actions/github/lib/utils';
+import { RequestParameters } from '@octokit/plugin-paginate-rest/dist-types/types';
+import { RequestError } from '@octokit/request-error';
 import { Octokit } from '@octokit/rest';
 import * as fs from 'fs';
 import path from 'path';
-import url from 'url';
 
+// import url from 'url';
 import { Release, ReleaseAsset, Repo } from './types';
 
 export function repoSplit(
@@ -100,18 +102,10 @@ export async function downloadReleaseAssets(
     let octokit: InstanceType<typeof GitHub> | InstanceType<typeof Octokit>;
     if (octokitInstance === undefined) {
         octokit = new Octokit({ auth: token });
-        octokit.rest.repos.getReleaseAsset.endpoint.merge({
-            headers: {
-                Accept: 'application/octet-stream',
-                UserAgent: 'download-release-assets',
-                //Host: "api.github.com"
-                // Authorization: `token ${token}`,
-            },
-            // access_token: token,
-        });
     } else {
         octokit = octokitInstance;
     }
+    octokit.log.debug(`Octokit auth: ${octokit.auth()}`);
     let download_assets: string[];
     if (release !== undefined) {
         const releaseAssets: ReleaseAsset[] = release?.assets;
@@ -141,30 +135,83 @@ export async function downloadReleaseAssets(
                     downloaded_paths.push(outFilePath);
                     const fileStream = fs.createWriteStream(outFilePath, { flags: 'a' });
 
-                    const downloadInfo = await octokit.request(
-                        'GET /repos/{owner}/{repo}/releases/assets/{asset_id}',
-                        {
+                    const rq: RequestParameters = {
+                        headers: {
+                            accept: 'application/octet-stream',
+                        },
+                    };
+                    try {
+                        const response = await octokit.rest.repos.getReleaseAsset({
+                            ...rq,
                             ...repos,
                             asset_id: a.id,
-                        },
-                    );
-                    // Redirect URLs now contain the auth key, redirect without the auth header
-                    if (downloadInfo?.headers?.location !== undefined) {
-                        const redirectUrl = downloadInfo.headers.location;
-                        const thisurl = new url.URL(redirectUrl);
-                        core.debug(`URL parameters are ${thisurl.searchParams}`);
-                        thisurl.searchParams.delete('access_token');
-                        core.debug(`Redirecting to ${url.toString()}`);
-
-                        const asset = await octokit.request(`GET ${url.toString()}`, {
-                            headers: {
-                                Accept: 'application/octet-stream',
-                                UserAgent: 'download-release-assets',
-                            },
                         });
-                        fileStream.write(Buffer.from(asset.data));
+
+                        octokit.log.debug(
+                            `downloadReleaseAssets response ${JSON.stringify(
+                                response.data,
+                                null,
+                                ' ',
+                            )}`,
+                        );
+                        fileStream.write(
+                            Buffer.from(<ArrayBuffer>(<unknown>response.data)),
+                            'binary',
+                        );
                         fileStream.end();
+                    } catch (err) {
+                        const error = err as RequestError;
+                        if (
+                            error !== undefined &&
+                            'status' in error &&
+                            error.status === 400 &&
+                            error.response !== undefined &&
+                            error.response.url.includes('/objects.githubusercontent.com/')
+                        ) {
+                            const ok = new Octokit();
+                            const { data } = await ok.request(`GET ${error.response.url}`);
+
+                            fileStream.write(Buffer.from(<ArrayBuffer>(<unknown>data)), 'binary');
+                            fileStream.end();
+                        } else {
+                            const errorMsg = `Error downloading asset ${a.name}: \n${JSON.stringify(
+                                err,
+                            )}`;
+
+                            core.setFailed(errorMsg);
+                            throw err;
+                        }
                     }
+
+                    // fileStream.write(Buffer.from(asset.data));
+                    // fileStream.end();
+                    // const downloadInfo = await octokit.request(
+                    //     'GET /repos/{owner}/{repo}/releases/assets/{asset_id}',
+                    //     {
+                    //         ...repos,
+                    //         asset_id: a.id,
+                    //     },
+                    // );
+                    // // Redirect URLs now contain the auth key, redirect without the auth header
+                    // if (downloadInfo?.headers?.location !== undefined) {
+                    //     const ok = new Octokit();
+                    //     const redirectUrl = downloadInfo.headers.location;
+                    //     const thisurl = new url.URL(redirectUrl);
+                    //     core.debug(`URL parameters are ${thisurl.searchParams}`);
+                    //     thisurl.searchParams.delete('access_token');
+                    //     core.debug(`Redirecting to ${url.toString()}`);
+
+                    //     const asset = await ok.request(`GET ${url.toString()}`, {
+                    //         headers: {
+                    //             Accept: 'application/octet-stream',
+                    //             UserAgent: 'download-release-assets',
+                    //         },
+                    //     });
+                    //     fileStream.write(Buffer.from(asset.data));
+                    //     fileStream.end();
+                    // } else {
+                    //     throw new Error('Redirect URL not found');
+                    // }
                 }
             }
             core.setOutput('downloaded_paths', JSON.stringify(downloaded_paths));
