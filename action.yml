@@ -1,35 +1,35 @@
 name: Github Actions Download Release Asset
 description: Download a release asset from a release
 branding:
-  color: blue
-  icon: git-pull-request
+    color: blue
+    icon: git-pull-request
 inputs:
-  github_token:
-    description: The Github Token to authenticate with
-    required: false
-  tag_name:
-    description: The version tag to identify the release, or 'latest'
-    required: false
-    default: 'latest'
-  asset_names:
-    description: A comma delimited list of asset names to download
-    required: false
-  path:
-    description: A path to save the file in, defaults to the github workspace
-    required: false
-  repository:
-    required: false
-    description: A named repository in the format Owner\repositoryName
-  ignore_v_when_searching:
-    required: false
-    description: When finding a release that matches a tag name, ignores 'v' prefixes on the release
-    default: 'true'
+    github_token:
+        description: The Github Token to authenticate with
+        required: false
+    tag_name:
+        description: The version tag to identify the release, or 'latest'
+        required: false
+        default: 'latest'
+    asset_names:
+        description: A comma delimited list of asset names to download
+        required: false
+    path:
+        description: A path to save the file in, defaults to the github workspace
+        required: false
+    repository:
+        required: false
+        description: A named repository in the format Owner\repositoryName
+    ignore_v_when_searching:
+        required: false
+        description: When finding a release that matches a tag name, ignores 'v' prefixes on the release
+        default: 'true'
 
 outputs:
-  file_names:
-    description: The downloaded file names as json array
-  file_path:
-    description: The path of the downloaded files
+    file_names:
+        description: The downloaded file names as json array
+    file_path:
+        description: The path of the downloaded files
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+    using: 'node16'
+    main: 'dist/index.js'

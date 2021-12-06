@@ -1,81 +1,87 @@
-import * as fs from 'fs'
+import * as fs from 'fs';
 
-export function directoryExistsSync(path: string, required?: boolean): boolean {
-  if (!path) {
-    throw new Error("Arg 'path' must not be empty")
-  }
-  try {
-    const stats: fs.Stats = fs.statSync(path)
-    if (stats.isDirectory()) {
-      return true
-    } else if (!required) {
-      return false
+export default class FsHelper {
+    // eslint-disable-next-line no-unused-vars
+    static instanceOfNodeError<T extends new (...args: any) => Error>(
+        value: any,
+        errorType: T,
+    ): value is InstanceType<T> & NodeJS.ErrnoException {
+        return value instanceof errorType;
+    }
+    public static directoryExistsSync(path: string, required?: boolean): boolean {
+        if (!path) {
+            throw new Error('Arg "path" must not be empty');
+        }
+        try {
+            const stats: fs.Stats = fs.statSync(path);
+            if (stats.isDirectory()) {
+                return true;
+            } else if (!required) {
+                return false;
+            }
+
+            throw new Error(`Directory '${path}' does not exist`);
+        } catch (error) {
+            if (FsHelper.instanceOfNodeError(error, Error)) {
+                if ('code' in error && error.code === 'ENOENT') {
+                    if (!required) {
+                        return false;
+                    }
+
+                    throw new Error(`Directory '${path}' does not exist`);
+                }
+
+                throw new Error(
+                    `Encountered an error when checking whether path '${path}' exists: ${error.message}`,
+                );
+            }
+        }
+        return false;
     }
 
-    throw new Error(`Directory '${path}' does not exist`)
-  } catch (error: any) {
-    if (
-      ('status' in error && error.status === 'ENOENT') ||
-      ('code' in error && error.code === 'ENOENT')
-    ) {
-      if (!required) {
-        return false
-      }
+    public static existsSync(path: string): boolean {
+        if (!path) {
+            throw new Error('Arg "path" must not be empty');
+        }
 
-      throw new Error(`Directory '${path}' does not exist`)
+        try {
+            fs.statSync(path);
+        } catch (error) {
+            if (FsHelper.instanceOfNodeError(error, Error)) {
+                if ('code' in error && error.code === 'ENOENT') {
+                    return false;
+                }
+
+                throw new Error(
+                    `Encountered an error when checking whether path '${path}' exists: ${error.message}`,
+                );
+            }
+        }
+
+        return true;
     }
 
-    throw new Error(
-      `Encountered an error when checking whether path '${path}' exists: ${error.message}`,
-    )
-  }
-}
+    public static fileExistsSync(path: string): boolean {
+        if (!path) {
+            throw new Error('Arg "path" must not be empty');
+        }
 
-export function existsSync(path: string): boolean {
-  if (!path) {
-    throw new Error("Arg 'path' must not be empty")
-  }
+        try {
+            const stats = fs.statSync(path);
+            if (!stats.isDirectory()) {
+                return true;
+            }
+        } catch (error) {
+            if (FsHelper.instanceOfNodeError(error, Error)) {
+                if ('code' in error && error.code === 'ENOENT') {
+                    return false;
+                }
 
-  try {
-    fs.statSync(path)
-  } catch (error: any) {
-    if (
-      ('status' in error && error.status === 'ENOENT') ||
-      ('code' in error && error.code === 'ENOENT')
-    ) {
-      return false
+                throw new Error(
+                    `Encountered an error when checking whether path '${path}' exists: ${error.message}`,
+                );
+            }
+        }
+        return false;
     }
-
-    throw new Error(
-      `Encountered an error when checking whether path '${path}' exists: ${error.message}`,
-    )
-  }
-
-  return true
-}
-
-export function fileExistsSync(path: string): boolean {
-  if (!path) {
-    throw new Error("Arg 'path' must not be empty")
-  }
-
-  try {
-    const stats = fs.statSync(path)
-    if (!stats.isDirectory()) {
-      return true
-    }
-
-    return false
-  } catch (error: any) {
-    if (
-      ('status' in error && error.status === 'ENOENT') ||
-      ('code' in error && error.code === 'ENOENT')
-    ) {
-      return false
-    }
-
-    throw new Error(
-      `Encountered an error when checking whether path '${path}' exists: ${error.message}`,
-    )
-  }
 }
