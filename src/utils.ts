@@ -49,7 +49,8 @@ export async function getReleaseByTag(
     owner: string,
     repo: string,
     tagName: string,
-    octokit: InstanceType<typeof GitHub>,
+    token: string,
+    octokitInstance: InstanceType<typeof GitHub> | InstanceType<typeof Octokit> | undefined,
     ignore_v_when_searching = true,
 ): Promise<Release | undefined> {
     const pages = {
@@ -59,7 +60,12 @@ export async function getReleaseByTag(
     };
 
     let search_str;
-
+    let octokit: InstanceType<typeof GitHub> | InstanceType<typeof Octokit>;
+    if (octokitInstance === undefined) {
+        octokit = new Octokit({ auth: token });
+    } else {
+        octokit = octokitInstance;
+    }
     if (ignore_v_when_searching) {
         search_str = `^(v)?${escapeRegExp(tagName)}`;
     } else {

@@ -28,8 +28,6 @@ import { downloadReleaseAssets, getReleaseByTag, repoSplit } from './utils';
             return;
         }
 
-        const octokit = github.getOctokit(github_token);
-
         debug('Loading octokit: completed');
 
         let repos: null | Repo = null;
@@ -49,7 +47,8 @@ import { downloadReleaseAssets, getReleaseByTag, repoSplit } from './utils';
             repos.owner,
             repos.repo,
             tag_name,
-            octokit,
+            github_token,
+            undefined,
             ignore_v_when_searching,
         );
 

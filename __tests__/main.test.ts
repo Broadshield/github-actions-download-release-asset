@@ -1,6 +1,5 @@
 import * as core from '@actions/core';
 import { context } from '@actions/github';
-import { Octokit } from '@octokit/rest';
 import { assert } from 'console';
 import { resolve } from 'path';
 
@@ -79,9 +78,6 @@ describe('get releases', () => {
     it('Get Known Asset', async () => {
         assert(process.env.GITHUB_TOKEN, 'GITHUB_TOKEN environment variable does not exist');
 
-        const octokit = new Octokit({
-            auth: inputs.github_token || process.env.GITHUB_TOKEN || '',
-        });
         const repos = repoSplit('Broadshield/wearsafe-api', null);
 
         if (inputs.github_token == null || repos == null) {
@@ -91,7 +87,8 @@ describe('get releases', () => {
             repos.owner,
             repos.repo,
             inputs.tag_name,
-            octokit,
+            inputs.github_token,
+            undefined,
             inputs.ignore_v_when_searching === 'true',
         );
         core.info(JSON.stringify(release));
