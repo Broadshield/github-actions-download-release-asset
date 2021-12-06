@@ -5,17 +5,10 @@ name: Push - Run Yarn Tests
             - '**'
 jobs:
     unit_tests:
-        runs-on: Ubuntu-20.04
-        # container:
-        #   image: node:12
+        runs-on: ubuntu-20.04
         steps:
             - uses: actions/checkout@v2.3.4
               name: Checkout
-            - name: Set Cache Path
-              run: |
-                  node --version
-                  yarn --version
-                  yarn config set cache-folder $(pwd)/.cache
             - name: Get yarn cache directory path
               id: yarn-cache-dir-path
               run: echo "::set-output name=dir::$(yarn config get cache-folder)"
@@ -29,6 +22,8 @@ jobs:
             - name: Run Yarn
               run: yarn
             - name: Run Yarn Tests
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: yarn test-ci
             - uses: IgnusG/jest-report-action@v2.3.3
               if: always() # Or use "continue-on-error: true" in previous test step

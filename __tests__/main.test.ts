@@ -78,7 +78,7 @@ describe('get releases', () => {
     it('Get Known Asset', async () => {
         assert(process.env.GITHUB_TOKEN, 'GITHUB_TOKEN environment variable does not exist');
 
-        const octokit = getOctokit(inputs.github_token);
+        const octokit = getOctokit(inputs.github_token || process.env.GITHUB_TOKEN || '');
         const repos = repoSplit('Broadshield/wearsafe-api', null);
 
         if (inputs.github_token == null || repos == null) {
