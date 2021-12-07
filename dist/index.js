@@ -13,7 +13,6 @@ const core = (0, tslib_1.__importStar)(__nccwpck_require__(2186));
 const rest_1 = __nccwpck_require__(5375);
 const fs = (0, tslib_1.__importStar)(__nccwpck_require__(7147));
 const path_1 = (0, tslib_1.__importDefault)(__nccwpck_require__(1017));
-const url_1 = (0, tslib_1.__importDefault)(__nccwpck_require__(7310));
 function repoSplit(inputRepo, context) {
     const result = {};
     if (inputRepo) {
@@ -38,13 +37,20 @@ exports.repoSplit = repoSplit;
 function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-async function getReleaseByTag(owner, repo, tagName, octokit, ignore_v_when_searching = true) {
+async function getReleaseByTag(owner, repo, tagName, token, octokitInstance, ignore_v_when_searching = true) {
     const pages = {
         owner,
         repo,
         per_page: 100,
     };
     let search_str;
+    let octokit;
+    if (octokitInstance === undefined) {
+        octokit = new rest_1.Octokit({ auth: token });
+    }
+    else {
+        octokit = octokitInstance;
+    }
     if (ignore_v_when_searching) {
         search_str = `^(v)?${escapeRegExp(tagName)}`;
     }
@@ -76,16 +82,11 @@ async function downloadReleaseAssets(release, asset_names, filepath, repos, toke
     let octokit;
     if (octokitInstance === undefined) {
         octokit = new rest_1.Octokit({ auth: token });
-        octokit.rest.repos.getReleaseAsset.endpoint.merge({
-            headers: {
-                Accept: 'application/octet-stream',
-                UserAgent: 'download-release-assets',
-            },
-        });
     }
     else {
         octokit = octokitInstance;
     }
+    octokit.log.debug(`Octokit auth: ${octokit.auth()}`);
     let download_assets;
     if (release !== undefined) {
         const releaseAssets = release?.assets;
@@ -111,24 +112,38 @@ async function downloadReleaseAssets(release, asset_names, filepath, repos, toke
                     const outFilePath = path_1.default.resolve(filepath, a.name);
                     downloaded_paths.push(outFilePath);
                     const fileStream = fs.createWriteStream(outFilePath, { flags: 'a' });
-                    const downloadInfo = await octokit.request('GET /repos/{owner}/{repo}/releases/assets/{asset_id}', {
-                        ...repos,
-                        asset_id: a.id,
-                    });
-                    if (downloadInfo?.headers?.location !== undefined) {
-                        const redirectUrl = downloadInfo.headers.location;
-                        const thisurl = new url_1.default.URL(redirectUrl);
-                        core.debug(`URL parameters are ${thisurl.searchParams}`);
-                        thisurl.searchParams.delete('access_token');
-                        core.debug(`Redirecting to ${url_1.default.toString()}`);
-                        const asset = await octokit.request(`GET ${url_1.default.toString()}`, {
-                            headers: {
-                                Accept: 'application/octet-stream',
-                                UserAgent: 'download-release-assets',
-                            },
+                    const rq = {
+                        headers: {
+                            accept: 'application/octet-stream',
+                        },
+                    };
+                    try {
+                        const response = await octokit.rest.repos.getReleaseAsset({
+                            ...rq,
+                            ...repos,
+                            asset_id: a.id,
                         });
-                        fileStream.write(Buffer.from(asset.data));
+                        octokit.log.debug(`downloadReleaseAssets response ${JSON.stringify(response.data, null, ' ')}`);
+                        fileStream.write(Buffer.from(response.data), 'binary');
                         fileStream.end();
+                    }
+                    catch (err) {
+                        const error = err;
+                        if (error !== undefined &&
+                            'status' in error &&
+                            error.status === 400 &&
+                            error.response !== undefined &&
+                            error.response.url.includes('/objects.githubusercontent.com/')) {
+                            const ok = new rest_1.Octokit();
+                            const { data } = await ok.request(`GET ${error.response.url}`);
+                            fileStream.write(Buffer.from(data), 'binary');
+                            fileStream.end();
+                        }
+                        else {
+                            const errorMsg = `Error downloading asset ${a.name}: \n${JSON.stringify(err)}`;
+                            core.setFailed(errorMsg);
+                            throw err;
+                        }
                     }
                 }
             }
@@ -137,8 +152,8 @@ async function downloadReleaseAssets(release, asset_names, filepath, repos, toke
         core.setOutput('release_id', release.id);
         core.setOutput('release_name', release.name);
         core.setOutput('release_tag_name', release.tag_name);
-        core.setOutput('release_body', release?.body);
-        core.setOutput('releaseAssets_found', releaseAssets?.join(','));
+        core.setOutput('release_body', release.body_text);
+        core.setOutput('releaseAssets_found', JSON.stringify(releaseAssets));
     }
 }
 exports.downloadReleaseAssets = downloadReleaseAssets;
@@ -12192,7 +12207,6 @@ const utils_1 = __nccwpck_require__(918);
             (0, core_1.setFailed)('github_token not supplied');
             return;
         }
-        const octokit = github.getOctokit(github_token);
         (0, core_1.debug)('Loading octokit: completed');
         let repos = null;
         try {
@@ -12205,7 +12219,7 @@ const utils_1 = __nccwpck_require__(918);
             (0, core_1.setFailed)('Action failed with error: No repository information available');
             return;
         }
-        const release = await (0, utils_1.getReleaseByTag)(repos.owner, repos.repo, tag_name, octokit, ignore_v_when_searching);
+        const release = await (0, utils_1.getReleaseByTag)(repos.owner, repos.repo, tag_name, github_token, undefined, ignore_v_when_searching);
         await (0, utils_1.downloadReleaseAssets)(release, asset_names, filepath, repos, github_token, undefined);
     }
     catch (error) {
