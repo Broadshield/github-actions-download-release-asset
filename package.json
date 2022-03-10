@@ -1,6 +1,6 @@
 {
     "name": "@Broadshield/github-action-download-release-asset",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Download a release asset from a release",
     "main": "dist/main.js",
     "repository": {
