@@ -1,7 +1,6 @@
 import * as core from '@actions/core';
 import { Context } from '@actions/github/lib/context';
 import { GitHub } from '@actions/github/lib/utils';
-import { RequestParameters } from '@octokit/plugin-paginate-rest/dist-types/types';
 import { RequestError } from '@octokit/request-error';
 import { Octokit } from '@octokit/rest';
 import * as fs from 'fs';
@@ -141,7 +140,7 @@ export async function downloadReleaseAssets(
                     downloaded_paths.push(outFilePath);
                     const fileStream = fs.createWriteStream(outFilePath, { flags: 'a' });
 
-                    const rq: RequestParameters = {
+                    const rq = {
                         headers: {
                             accept: 'application/octet-stream',
                         },

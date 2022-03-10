@@ -1,6 +1,6 @@
 version: 0.1
 cli:
-    version: 0.3.1-beta
+    version: 0.8.1-beta
 lint:
     enabled:
         - actionlint@1.6.4
@@ -16,3 +16,4 @@ lint:
               - node_modules
               - .git
               - dist
+              - lib
