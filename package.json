@@ -40,7 +40,7 @@
         "@vercel/ncc": "^0.33.3",
         "cz-conventional-changelog": "^3.3.0",
         "dotenv": "^16.0.0",
-        "eslint": "^8.10.0",
+        "eslint": "^8.16.0",
         "eslint-config-prettier": "^8.5.0",
         "eslint-import-resolver-node": "^0.3.6",
         "eslint-plugin-github": "^4.3.5",
