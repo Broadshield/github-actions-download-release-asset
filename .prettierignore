@@ -3,6 +3,8 @@ lib/
 node_modules/
 **/.vscode
 **/.vs
-
+**/.trunk
+**/.git
+.vscode
 # Ignore CHANGELOG.md files to avoid issues with automated release job
 CHANGELOG.md

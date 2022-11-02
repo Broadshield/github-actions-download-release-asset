@@ -1,8 +1,8 @@
 {
-    "extends": "./tsconfig.json",
-    "include": ["src/**/*.ts"],
-    "compilerOptions": {
-    "moduleResolution": "node",
-    },
-    "exclude": ["__tests__/*.ts", "jest.config.ts"]
+  "extends": "./tsconfig.json",
+  "include": ["**/*.ts"],
+  "compilerOptions": {
+    "moduleResolution": "node"
+  },
+  "exclude": []
 }

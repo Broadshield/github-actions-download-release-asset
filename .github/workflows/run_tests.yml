@@ -1,25 +1,25 @@
 name: Push - Run Yarn Tests
 'on':
-    push:
-        branches:
-            - '**'
+  push:
+    branches:
+      - '**'
 jobs:
-    unit_tests:
-        runs-on: ubuntu-20.04
-        steps:
-            - uses: actions/checkout@v2.4.0
-              name: Checkout
-            - uses: actions/setup-node@v2
-              with:
-                  node-version: '16'
-                  cache: 'yarn'
-            - name: Run Yarn
-              run: yarn
-            - name: Run Yarn Tests
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-              run: yarn test-ci
-            - uses: IgnusG/jest-report-action@v2.3.3
-              if: always() # Or use "continue-on-error: true" in previous test step
-              with:
-                  access-token: ${{ secrets.GITHUB_TOKEN }}
+  unit_tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2.4.0
+        name: Checkout
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'yarn'
+      - name: Run Yarn
+        run: yarn
+      - name: Run Yarn Tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        run: yarn test-ci
+      - uses: IgnusG/jest-report-action@v2.3.3
+        if: always() # Or use "continue-on-error: true" in previous test step
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN }}
