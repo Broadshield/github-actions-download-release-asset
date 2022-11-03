@@ -7,6 +7,7 @@ inputs:
   github_token:
     description: The Github Token to authenticate with
     required: false
+    default: ${{ github.token }}
   tag_name:
     description: The version tag to identify the release, or 'latest'
     required: false
