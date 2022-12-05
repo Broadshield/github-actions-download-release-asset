@@ -22,7 +22,7 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
     steps:
-      - uses: bitflight-devops/shell-scripts@v1
+      - uses: bitflight-devops/shell-scripts@v2
         name: Install shell utility scripts
 
       - uses: actions/checkout@v3.1.0
